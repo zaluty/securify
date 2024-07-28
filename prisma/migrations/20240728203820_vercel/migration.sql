@@ -1,11 +1,13 @@
 -- CreateTable
 CREATE TABLE "ApiKey" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "originalKey" TEXT NOT NULL,
     "generatedKey" TEXT NOT NULL,
     "apiProvider" TEXT NOT NULL,
     "baseUrl" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ApiKey_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
