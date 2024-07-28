@@ -1,14 +1,47 @@
 generator client {
   provider = "prisma-client-js"
 }
+
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
 }
 
+model Blog {
+  id        String   @id
+  title     String
+  userId    String
+  slug      String   @unique
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  published Boolean  @default(false)
+  tags      String
+}
+
+model Chat {
+  id        String   @id
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+  chatId    String
+}
+
+model Payements {
+  id        String   @id
+  userId    String
+  plan      Plan
+  createdAt DateTime @default(now())
+}
+
+enum Plan {
+  PRO
+  FREE
+  PREMIUM
+}
 
 model ApiKey {
-  id           Int      @id @default(autoincrement())
+  id           String   @id @default(uuid())
   originalKey  String
   generatedKey String   @unique
   apiProvider  String 
