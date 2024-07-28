@@ -2,43 +2,11 @@
 generator client {
   provider = "prisma-client-js"
 }
-
+ 
 datasource db {
-  provider = "cockroachdb"
-  url      = env("DATABASE_URL")
-}
-
-model Blog {
-  id        String   @id
-  title     String
-  userId    String
-  slug      String   @unique
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-  published Boolean  @default(false)
-  tags      String
-}
-
-model Chat {
-  id        String   @id
-  role      String
-  content   String
-  createdAt DateTime @default(now())
-  chatId    String
-}
-
-model Payements {
-  id        String   @id
-  userId    String
-  plan      Plan
-  createdAt DateTime @default(now())
-}
-
-enum Plan {
-  PRO
-  FREE
-  PREMIUM
+  provider = "postgresql"
+  url = env("Database_PRISMA_URL") // uses connection pooling
+  directUrl = env("Database_URL_NON_POOLING") // uses a direct connection
 }
 
 model ApiKey {
