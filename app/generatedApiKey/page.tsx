@@ -20,8 +20,9 @@ const DogBreedList: React.FC = () => {
 
         try {
             const proxyRequest = {
-                generatedKey: 'abc123generatedkey456', // Replace with the actual generated key
-                endpoint: '/breeds',
+                generatedKey: '$2b$10$E.HuWp/Tn.0Iyp0ulb.steh1atlguXS1PI0koWAUkP9YThp9c.4lW',
+                endpoint: 'https://dog.ceo/api/breeds/list/all',
+                method: 'GET',
                 limit: 10,
                 page: 0
             }
@@ -31,14 +32,29 @@ const DogBreedList: React.FC = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(proxyRequest)
             })
-            console.log(response)
+
             if (!response.ok) {
-                throw new Error('Failed to fetch dog breeds')
+                const errorText = await response.text()
+                throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`)
             }
 
-            const data: DogBreed[] = await response.json()
-            setBreeds(data)
+
+            const data = await response.json()
+            console.log('Received data:', JSON.stringify(data))
+
+            if (Array.isArray(data)) {
+                setBreeds(data.slice(0, 10).map(breed => ({
+                    id: breed.id,
+                    name: breed.name,
+                    temperament: breed.temperament || 'Not available',
+                    life_span: breed.life_span
+                })))
+            } else {
+                console.error('Unexpected data format:', JSON.stringify(data))
+                setError('Received unexpected data format')
+            }
         } catch (err) {
+            console.error('Error fetching dog breeds:', err)
             setError(err instanceof Error ? err.message : 'An unknown error occurred')
         } finally {
             setLoading(false)

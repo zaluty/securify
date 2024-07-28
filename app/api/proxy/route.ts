@@ -15,16 +15,21 @@ export async function OPTIONS(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const { generatedKey, endpoint, ...requestData } = await request.json()
+        console.log('Received request:', { generatedKey, endpoint, requestData })
 
         const apiKey = await prisma.apiKey.findUnique({
             where: { generatedKey },
         })
 
         if (!apiKey) {
+            console.log('Invalid API key:', generatedKey)
             return NextResponse.json({ error: 'Invalid API key' }, { status: 401, headers: corsHeaders })
         }
 
-        const originalApiResponse = await fetch(`${apiKey.baseUrl}${endpoint}`, {
+        console.log('API key found:', apiKey)
+
+
+        const originalApiResponse = await fetch(`${apiKey.baseUrl}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
