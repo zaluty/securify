@@ -17,7 +17,7 @@ function runMiddleware(req: Request, res: NextResponse, fn: Function) {
 
 // Configure CORS
 const corsMiddleware = cors({
-    origin: ['http://localhost:3000', 'https://your-production-frontend-url.com'],
+    origin: ['http://localhost:3000', 'https://securify-gamma.vercel.app'],
     methods: ['GET', 'POST', 'OPTIONS'],
 })
 
