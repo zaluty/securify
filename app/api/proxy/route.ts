@@ -1,56 +1,43 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
-
-import cors from 'cors'
 const prisma = new PrismaClient()
-// Helper function to run middleware
-function runMiddleware(req: Request, res: NextResponse, fn: Function) {
-    return new Promise((resolve, reject) => {
-        fn(req, res, (result: any) => {
-            if (result instanceof Error) {
-                return reject(result)
-            }
-            return resolve(result)
+
+const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+}
+
+export async function OPTIONS(request: NextRequest) {
+    return NextResponse.json({}, { headers: corsHeaders })
+}
+
+export async function POST(request: NextRequest) {
+    try {
+        const { generatedKey, endpoint, ...requestData } = await request.json()
+
+        const apiKey = await prisma.apiKey.findUnique({
+            where: { generatedKey },
         })
-    })
-}
 
-// Configure CORS
-const corsMiddleware = cors({
-    origin: ['http://localhost:3000', 'https://securify-gamma.vercel.app'],
-    methods: ['GET', 'POST', 'OPTIONS'],
-})
+        if (!apiKey) {
+            return NextResponse.json({ error: 'Invalid API key' }, { status: 401, headers: corsHeaders })
+        }
 
-export async function OPTIONS(req: Request) {
-    const res = new NextResponse()
-    await runMiddleware(req, res, corsMiddleware)
-    return res
-}
+        const originalApiResponse = await fetch(`${apiKey.baseUrl}${endpoint}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey.originalKey}`,
+            },
+            body: JSON.stringify(requestData),
+        })
 
-export async function POST(req: Request) {
-    const res = new NextResponse()
-    await runMiddleware(req, res, corsMiddleware)
+        const data = await originalApiResponse.json()
 
-    const { generatedKey, endpoint, ...requestData } = await req.json()
-
-    const apiKey = await prisma.apiKey.findUnique({
-        where: { generatedKey },
-    })
-
-    if (!apiKey) {
-        return NextResponse.json({ error: 'Invalid API key' }, { status: 401 })
+        return NextResponse.json(data, { headers: corsHeaders })
+    } catch (error) {
+        console.error('Error in proxy route:', error)
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: corsHeaders })
     }
-
-    const originalApiResponse = await fetch(`${apiKey.baseUrl}${endpoint}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey.originalKey}`,
-        },
-        body: JSON.stringify(requestData),
-    })
-
-    const data = await originalApiResponse.json()
-
-    return NextResponse.json(data)
 }
