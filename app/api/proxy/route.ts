@@ -7,15 +7,23 @@ const corsHeaders = {
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
 }
-
 export async function OPTIONS(request: NextRequest) {
     return NextResponse.json({}, { headers: corsHeaders })
 }
-
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
     try {
-        const { generatedKey, endpoint, ...requestData } = await request.json()
-        console.log('Received request:', { generatedKey, endpoint, requestData })
+        const { searchParams } = new URL(request.url)
+        const generatedKey = searchParams.get('generatedKey')
+        const endpoint = searchParams.get('endpoint')
+        const limit = searchParams.get('limit')
+        const page = searchParams.get('page')
+
+        console.log('Received request:', { generatedKey, endpoint, limit, page })
+
+
+        if (!generatedKey) {
+            return NextResponse.json({ error: 'Missing API key' }, { status: 400, headers: corsHeaders })
+        }
 
         const apiKey = await prisma.apiKey.findUnique({
             where: { generatedKey },
@@ -28,14 +36,12 @@ export async function POST(request: NextRequest) {
 
         console.log('API key found:', apiKey)
 
-
-        const originalApiResponse = await fetch(`${apiKey.baseUrl}`, {
-            method: 'POST',
+        const originalApiResponse = await fetch(`${endpoint}`, {
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey.originalKey}`,
             },
-            body: JSON.stringify(requestData),
         })
 
         const data = await originalApiResponse.json()

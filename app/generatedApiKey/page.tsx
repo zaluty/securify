@@ -19,18 +19,20 @@ const DogBreedList: React.FC = () => {
         setError(null)
 
         try {
-            const proxyRequest = {
-                generatedKey: '$2b$10$E.HuWp/Tn.0Iyp0ulb.steh1atlguXS1PI0koWAUkP9YThp9c.4lW',
-                endpoint: 'https://dog.ceo/api/breeds/list/all',
-                method: 'GET',
-                limit: 10,
-                page: 0
-            }
+            const generatedKey = '$2b$10$E.HuWp/Tn.0Iyp0ulb.steh1atlguXS1PI0koWAUkP9YThp9c.4lW'
+            const endpoint = 'https://dog.ceo/api/breeds/list/all'
+            const limit = 10
+            const page = 0
 
-            const response = await fetch('https://securify-gamma.vercel.app/api/proxy', {
-                method: 'POST',
+            const url = new URL('https://securify-gamma.vercel.app/api/proxy')
+            url.searchParams.append('generatedKey', generatedKey)
+            url.searchParams.append('endpoint', endpoint)
+            url.searchParams.append('limit', limit.toString())
+            url.searchParams.append('page', page.toString())
+
+            const response = await fetch(url.toString(), {
+                method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(proxyRequest)
             })
 
             if (!response.ok) {
