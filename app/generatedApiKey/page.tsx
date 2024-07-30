@@ -2,17 +2,18 @@
 //@ts-ignore
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
-type apiKey = {
+type ApiKey = {
     createdAt: string,
     generatedKey: string,
-    id: string
-    apiKey: string
+    id: string,
+    apiKey: string,
+    baseUrl: string,
+    originalKey: string
 }
 
 export default function GeneratedApiKey() {
     const [visibleKeys, setVisibleKeys] = useState<{ [key: string]: boolean }>({})
-    const [apiKeys, setApiKeys] = useState<apiKey>([])
-    const [error, setError] = useState(false)
+    const [apiKeys, setApiKeys] = useState<ApiKey[]>([])
 
 
     const copyToClipboard = (text: string) => {
@@ -31,13 +32,13 @@ export default function GeneratedApiKey() {
 
     const fetchApiKeys = async () => {
         try {
-            const response = await fetch('/api/getApiKeys') // You'll need to create this API route
+            const response = await fetch('/api/getApiKeys')
             const data = await response.json()
             setApiKeys(data)
 
 
         } catch (err) {
-            toast.error('err niggaeqdqmsdfùfyqs')
+            toast.error('Error fetching API keys')
         }
     }
 
