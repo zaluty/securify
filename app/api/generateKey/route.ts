@@ -1,20 +1,36 @@
 import { NextResponse } from 'next/server'
-import bcrypt from 'bcrypt'
+import crypto from 'crypto'
 import { PrismaClient } from '@prisma/client'
+
 const prisma = new PrismaClient()
+
 export async function POST(req: Request) {
-  const { originalKey, apiProvider, baseUrl } = await req.json()
+  try {
+    const { originalKey, apiProvider, baseUrl, apiKeyName } = await req.json()
 
-  const generatedKey = await bcrypt.hash(originalKey + Date.now(), 10)
+    const generatedKey = generateApiKey()
 
-  await prisma.apiKey.create({
-    data: {
-      originalKey,
-      generatedKey,
-      apiProvider,
-      baseUrl,
-    },
-  })
+    const newApiKey = await prisma.userInput.create({
+      data: {
+        originalKey,
+        apiKeyName,
+        generatedKey,
+        apiProvider,
+        baseUrl,
+      },
+    })
 
-  return NextResponse.json({ generatedKey })
+    console.log(newApiKey)
+
+    return NextResponse.json({ generatedKey })
+  } catch (error) {
+    console.error('Error creating API key:', error)
+    return NextResponse.json({ error: 'Failed to create API key' }, { status: 500 })
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
+function generateApiKey(): string {
+  return `sk_${crypto.randomBytes(24).toString('base64').replace(/[+/=]/g, '')}`;
 }

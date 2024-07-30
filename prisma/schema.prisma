@@ -1,19 +1,26 @@
-
 generator client {
   provider = "prisma-client-js"
 }
- 
+
 datasource db {
-  provider = "postgresql"
-  url = env("Database_PRISMA_URL") // uses connection pooling
+  provider  = "postgresql"
+  url       = env("Database_PRISMA_URL") // uses connection pooling
   directUrl = env("Database_URL_NON_POOLING") // uses a direct connection
 }
 
-model ApiKey {
-  id           String   @id @default(uuid())
-  originalKey  String
+model userInput {
+  id          String @id @default(uuid())
+  originalKey String
+
+  apiKeyName   String
   generatedKey String   @unique
-  apiProvider  String 
+  apiProvider  String
   baseUrl      String
   createdAt    DateTime @default(now())
+
+  @@map("input")
+}
+
+model securefyApiKey {
+  securifyApiKey String @id
 }
