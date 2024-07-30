@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Missing API key' }, { status: 400, headers: corsHeaders })
         }
 
-        const apiKey = await prisma.apiKey.findUnique({
+        const apiKey = await prisma.userInput.findUnique({
             where: { generatedKey },
         })
 
